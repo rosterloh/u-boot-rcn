@@ -18,6 +18,7 @@
 
 struct cm_perpll *const cmper = (struct cm_perpll *)CM_PER;
 struct cm_wkuppll *const cmwkup = (struct cm_wkuppll *)CM_WKUP;
+struct cm_dpll *const cmdpll = (struct cm_dpll *)CM_DPLL;
 
 const struct dpll_regs dpll_mpu_regs = {
 	.cm_clkmode_dpll	= CM_WKUP + 0x560,
@@ -47,14 +48,8 @@ const struct dpll_regs dpll_ddr_regs = {
 	.cm_idlest_dpll		= CM_WKUP + 0x5A4,
 	.cm_clksel_dpll		= CM_WKUP + 0x5AC,
 	.cm_div_m2_dpll		= CM_WKUP + 0x5B0,
+	.cm_div_m4_dpll		= CM_WKUP + 0x5B8,
 };
-
-const struct dpll_params dpll_mpu = {
-		-1, -1, -1, -1, -1, -1, -1};
-const struct dpll_params dpll_core = {
-		-1, -1, -1, -1, -1, -1, -1};
-const struct dpll_params dpll_per = {
-		-1, -1, -1, -1, -1, -1, -1};
 
 void setup_clocks_for_console(void)
 {
@@ -99,12 +94,19 @@ void enable_basic_clocks(void)
 		&cmper->gpio1clkctrl,
 		&cmper->gpio2clkctrl,
 		&cmper->gpio3clkctrl,
+		&cmper->gpio4clkctrl,
+		&cmper->gpio5clkctrl,
 		&cmper->i2c1clkctrl,
+		&cmper->cpgmac0clkctrl,
 		&cmper->emiffwclkctrl,
 		&cmper->emifclkctrl,
 		&cmper->otfaemifclkctrl,
+		&cmper->qspiclkctrl,
 		0
 	};
 
 	do_enable_clocks(clk_domains, clk_modules_explicit_en, 1);
+
+	/* Select the Master osc clk as Timer2 clock source */
+	writel(0x1, &cmdpll->clktimer2clk);
 }

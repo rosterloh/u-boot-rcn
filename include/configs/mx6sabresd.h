@@ -23,6 +23,8 @@
 #endif
 #define PHYS_SDRAM_SIZE		(1u * 1024 * 1024 * 1024)
 
+#define CONFIG_SUPPORT_EMMC_BOOT /* eMMC specific */
+
 #include "mx6sabre_common.h"
 
 #define CONFIG_SYS_FSL_USDHC_NUM	3
@@ -45,5 +47,15 @@
 #define CONFIG_VIDEO_BMP_LOGO
 #define CONFIG_IPUV3_CLK 260000000
 #define CONFIG_IMX_HDMI
+
+#define CONFIG_CMD_PCI
+#ifdef CONFIG_CMD_PCI
+#define CONFIG_PCI
+#define CONFIG_PCI_PNP
+#define CONFIG_PCI_SCAN_SHOW
+#define CONFIG_PCIE_IMX
+#define CONFIG_PCIE_IMX_PERST_GPIO	IMX_GPIO_NR(7, 12)
+#define CONFIG_PCIE_IMX_POWER_GPIO	IMX_GPIO_NR(3, 19)
+#endif
 
 #endif                         /* __MX6QSABRESD_CONFIG_H */

@@ -14,7 +14,7 @@
 #ifndef __AT91RM9200EK_CONFIG_H__
 #define __AT91RM9200EK_CONFIG_H__
 
-#include <asm/sizes.h>
+#include <linux/sizes.h>
 
 /*
  * set some initial configurations depending on configure target
@@ -153,6 +153,7 @@
  * USB Config
  */
 #define CONFIG_USB_ATMEL			1
+#define CONFIG_USB_ATMEL_CLK_SEL_PLLB
 #define CONFIG_USB_OHCI_NEW			1
 #define CONFIG_USB_KEYBOARD			1
 #define CONFIG_USB_STORAGE			1

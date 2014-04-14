@@ -45,11 +45,15 @@
 #define CONFIG_BOOTDELAY		1
 
 /*
- * DDR information.  We say (for simplicity) that we have 1 bank,
- * always, even when we have more.  We always start at 0x80000000,
- * and we place the initial stack pointer in our SRAM.
+ * DDR information.  If the CONFIG_NR_DRAM_BANKS is not defined,
+ * we say (for simplicity) that we have 1 bank, always, even when
+ * we have more.  We always start at 0x80000000, and we place the
+ * initial stack pointer in our SRAM. Otherwise, we can define
+ * CONFIG_NR_DRAM_BANKS before including this file.
  */
+#ifndef CONFIG_NR_DRAM_BANKS
 #define CONFIG_NR_DRAM_BANKS		1
+#endif
 #define CONFIG_SYS_SDRAM_BASE		0x80000000
 #define CONFIG_SYS_INIT_SP_ADDR         (NON_SECURE_SRAM_END - \
 						GENERATED_GBL_DATA_SIZE)
@@ -59,12 +63,11 @@
 
 /* I2C IP block */
 #define CONFIG_I2C
-#define CONFIG_HARD_I2C
-#define CONFIG_SYS_I2C_SPEED		100000
-#define CONFIG_SYS_I2C_SLAVE		1
-#define CONFIG_I2C_MULTI_BUS
-#define CONFIG_DRIVER_OMAP24XX_I2C
 #define CONFIG_CMD_I2C
+#define CONFIG_SYS_I2C
+#define CONFIG_SYS_OMAP24_I2C_SPEED	100000
+#define CONFIG_SYS_OMAP24_I2C_SLAVE	1
+#define CONFIG_SYS_I2C_OMAP24XX
 
 /* MMC/SD IP block */
 #define CONFIG_MMC
@@ -201,7 +204,7 @@
 #define CONFIG_SPL_FAT_LOAD_PAYLOAD_NAME	"u-boot.img"
 
 #ifdef CONFIG_SPL_OS_BOOT
-#define CONFIG_SYS_SPL_ARGS_ADDR		(CONFIG_SYS_SDRAM_BASE + 0x100)
+#define CONFIG_SYS_SPL_ARGS_ADDR		0x80F80000
 
 /* FAT */
 #define CONFIG_SPL_FAT_LOAD_KERNEL_NAME		"uImage"
@@ -238,7 +241,6 @@
 #define CONFIG_SPL_BOARD_INIT
 
 #ifdef CONFIG_NAND
-#define CONFIG_SPL_NAND_AM33XX_BCH	/* OMAP4 and later ELM support */
 #define CONFIG_SPL_NAND_SUPPORT
 #define CONFIG_SPL_NAND_BASE
 #define CONFIG_SPL_NAND_DRIVERS

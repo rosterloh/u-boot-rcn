@@ -21,7 +21,6 @@
 #include <asm/arch/mux.h>
 #include <asm/arch/mem.h>
 #include <asm/arch/sys_proto.h>
-#include <asm/omap_gpmc.h>
 #include <asm/gpio.h>
 #include <asm/mach-types.h>
 #include "overo.h"
@@ -92,7 +91,7 @@ int get_board_revision(void)
 {
 	int revision;
 
-#ifdef CONFIG_DRIVER_OMAP34XX_I2C
+#ifdef CONFIG_SYS_I2C_OMAP34XX
 	unsigned char data;
 
 	/* board revisions <= R2410 connect 4030 irq_1 to gpio112             */

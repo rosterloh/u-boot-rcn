@@ -8,6 +8,7 @@
 
 #include <asm/arch/socfpga_base_addrs.h>
 #include "../../board/altera/socfpga/pinmux_config.h"
+#include "../../board/altera/socfpga/pll_config.h"
 
 /*
  * High level configuration
@@ -16,7 +17,6 @@
 #define CONFIG_SOCFPGA_VIRTUAL_TARGET
 
 #define CONFIG_ARMV7
-#define CONFIG_L2_OFF
 #define CONFIG_SYS_DCACHE_OFF
 #undef CONFIG_USE_IRQ
 

@@ -101,32 +101,6 @@ fiq:
  *************************************************************************
  */
 
-.globl _TEXT_BASE
-_TEXT_BASE:
-#ifdef CONFIG_SPL_TEXT_BASE
-	.word	CONFIG_SPL_TEXT_BASE
-#else
-	.word	CONFIG_SYS_TEXT_BASE
-#endif
-
-/*
- * These are defined in the board-specific linker script.
- * Subtracting _start from them lets the linker put their
- * relative position in the executable instead of leaving
- * them null.
- */
-.globl _bss_start_ofs
-_bss_start_ofs:
-	.word __bss_start - _start
-
-.globl _bss_end_ofs
-_bss_end_ofs:
-	.word __bss_end - _start
-
-.globl _end_ofs
-_end_ofs:
-	.word _end - _start
-
 #ifdef CONFIG_USE_IRQ
 /* IRQ stack memory (calculated at run-time) */
 .globl IRQ_STACK_START
@@ -149,6 +123,15 @@ IRQ_STACK_START_IN:
  */
 
 _reset:
+	/*
+	 * If the CPU is configured in "Wait JTAG connection mode", the stack
+	 * pointer is not configured and is zero. This will cause crash when
+	 * trying to push data onto stack right below here. Load the SP and make
+	 * it point to the end of OCRAM if the SP is zero.
+	 */
+	cmp	sp, #0x00000000
+	ldreq	sp, =CONFIG_SYS_INIT_SP_ADDR
+
 	/*
 	 * Store all registers on old stack pointer, this will allow us later to
 	 * return to the BootROM and let the BootROM load U-Boot into RAM.
@@ -198,6 +181,5 @@ _reset:
 	bx	lr
 
 _hang:
-	ldr	sp, _TEXT_BASE			/* switch to abort stack */
 1:
 	bl	1b				/* hang and never return */

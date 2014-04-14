@@ -43,6 +43,9 @@ static const struct block_drvr block_drvr[] = {
 #if defined(CONFIG_SYSTEMACE)
 	{ .name = "ace", .get_dev = systemace_get_dev, },
 #endif
+#if defined(CONFIG_SANDBOX)
+	{ .name = "host", .get_dev = host_get_dev, },
+#endif
 	{ },
 };
 
@@ -286,6 +289,9 @@ static void print_part_header (const char *type, block_dev_desc_t * dev_desc)
 	case IF_TYPE_MMC:
 		puts ("MMC");
 		break;
+	case IF_TYPE_HOST:
+		puts("HOST");
+		break;
 	default:
 		puts ("UNKNOWN");
 		break;
@@ -445,23 +451,6 @@ int get_device_and_partition(const char *ifname, const char *dev_part_str,
 	int p;
 	int part;
 	disk_partition_t tmpinfo;
-
-	/*
-	 * For now, we have a special case for sandbox, since there is no
-	 * real block device support.
-	 */
-	if (0 == strcmp(ifname, "host")) {
-		*dev_desc = NULL;
-		info->start = info->size =  info->blksz = 0;
-		info->bootable = 0;
-		strcpy((char *)info->type, BOOT_PART_TYPE);
-		strcpy((char *)info->name, "Sandbox host");
-#ifdef CONFIG_PARTITION_UUIDS
-		info->uuid[0] = 0;
-#endif
-
-		return 0;
-	}
 
 	/* If no dev_part_str, use bootdevice environment variable */
 	if (!dev_part_str || !strlen(dev_part_str) ||

@@ -14,7 +14,6 @@
 #define CONFIG_ALPR		1	    /* Board is ebony		*/
 #define CONFIG_440GX		1	    /* Specifc GX support	*/
 #define CONFIG_440		1	    /* ... PPC440 family	*/
-#define CONFIG_4xx		1	    /* ... PPC4xx family	*/
 #define CONFIG_BOARD_EARLY_INIT_F 1	    /* Call board_pre_init	*/
 #define CONFIG_LAST_STAGE_INIT	1	    /* call last_stage_init()	*/
 
@@ -324,6 +323,8 @@
 #define CONFIG_SYS_NAND_BASE_LIST	{ CONFIG_SYS_NAND_BASE + 0, CONFIG_SYS_NAND_BASE + 2,	\
 				  CONFIG_SYS_NAND_BASE + 4, CONFIG_SYS_NAND_BASE + 6 }
 #define CONFIG_SYS_NAND_QUIET_TEST	1	/* don't warn upon unknown NAND flash	*/
+#define CONFIG_SYS_NAND_MAX_OOBFREE	2
+#define CONFIG_SYS_NAND_MAX_ECCPOS	56
 
 /*-----------------------------------------------------------------------
  * External Bus Controller (EBC) Setup
@@ -347,7 +348,6 @@
 
 #if defined(CONFIG_CMD_KGDB)
 #define CONFIG_KGDB_BAUDRATE	230400	/* speed to run kgdb serial port */
-#define CONFIG_KGDB_SER_INDEX	2	/* which serial port to use */
 #endif
 
 /* pass open firmware flat tree */

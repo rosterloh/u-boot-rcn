@@ -6,12 +6,12 @@
  * SPDX-License-Identifier:	GPL-2.0+
  */
 
+#include <bouncebuf.h>
 #include <common.h>
 #include <malloc.h>
 #include <mmc.h>
 #include <dwmmc.h>
 #include <asm-generic/errno.h>
-#include <asm/arch/dwmmc.h>
 
 #define PAGE_SIZE 4096
 
@@ -42,11 +42,13 @@ static void dwmci_set_idma_desc(struct dwmci_idmac *idmac,
 }
 
 static void dwmci_prepare_data(struct dwmci_host *host,
-		struct mmc_data *data, struct dwmci_idmac *cur_idmac)
+			       struct mmc_data *data,
+			       struct dwmci_idmac *cur_idmac,
+			       void *bounce_buffer)
 {
 	unsigned long ctrl;
 	unsigned int i = 0, flags, cnt, blk_cnt;
-	ulong data_start, data_end, start_addr;
+	ulong data_start, data_end;
 
 
 	blk_cnt = data->blocks;
@@ -55,11 +57,6 @@ static void dwmci_prepare_data(struct dwmci_host *host,
 
 	data_start = (ulong)cur_idmac;
 	dwmci_writel(host, DWMCI_DBADDR, (unsigned int)cur_idmac);
-
-	if (data->flags == MMC_DATA_READ)
-		start_addr = (unsigned int)data->dest;
-	else
-		start_addr = (unsigned int)data->src;
 
 	do {
 		flags = DWMCI_IDMAC_OWN | DWMCI_IDMAC_CH ;
@@ -71,7 +68,7 @@ static void dwmci_prepare_data(struct dwmci_host *host,
 			cnt = data->blocksize * 8;
 
 		dwmci_set_idma_desc(cur_idmac, flags, cnt,
-				start_addr + (i * PAGE_SIZE));
+				    (u32)bounce_buffer + (i * PAGE_SIZE));
 
 		if (blk_cnt <= 8)
 			break;
@@ -110,7 +107,7 @@ static int dwmci_set_transfer_mode(struct dwmci_host *host,
 static int dwmci_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd,
 		struct mmc_data *data)
 {
-	struct dwmci_host *host = (struct dwmci_host *)mmc->priv;
+	struct dwmci_host *host = mmc->priv;
 	ALLOC_CACHE_ALIGN_BUFFER(struct dwmci_idmac, cur_idmac,
 				 data ? DIV_ROUND_UP(data->blocks, 8) : 0);
 	int flags = 0, i;
@@ -118,6 +115,7 @@ static int dwmci_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd,
 	u32 retry = 10000;
 	u32 mask, ctrl;
 	ulong start = get_timer(0);
+	struct bounce_buffer bbstate;
 
 	while (dwmci_readl(host, DWMCI_STATUS) & DWMCI_BUSY) {
 		if (get_timer(start) > timeout) {
@@ -128,8 +126,19 @@ static int dwmci_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd,
 
 	dwmci_writel(host, DWMCI_RINTSTS, DWMCI_INTMSK_ALL);
 
-	if (data)
-		dwmci_prepare_data(host, data, cur_idmac);
+	if (data) {
+		if (data->flags == MMC_DATA_READ) {
+			bounce_buffer_start(&bbstate, (void*)data->dest,
+					    data->blocksize *
+					    data->blocks, GEN_BB_WRITE);
+		} else {
+			bounce_buffer_start(&bbstate, (void*)data->src,
+					    data->blocksize *
+					    data->blocks, GEN_BB_READ);
+		}
+		dwmci_prepare_data(host, data, cur_idmac,
+				   bbstate.bounce_buffer);
+	}
 
 	dwmci_writel(host, DWMCI_CMDARG, cmd->cmdarg);
 
@@ -205,6 +214,8 @@ static int dwmci_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd,
 		ctrl = dwmci_readl(host, DWMCI_CTRL);
 		ctrl &= ~(DWMCI_DMA_EN);
 		dwmci_writel(host, DWMCI_CTRL, ctrl);
+
+		bounce_buffer_stop(&bbstate);
 	}
 
 	udelay(100);
@@ -226,7 +237,7 @@ static int dwmci_setup_bus(struct dwmci_host *host, u32 freq)
 	 * host->bus_hz should be set from user.
 	 */
 	if (host->get_mmc_clk)
-		sclk = host->get_mmc_clk(host->dev_index);
+		sclk = host->get_mmc_clk(host);
 	else if (host->bus_hz)
 		sclk = host->bus_hz;
 	else {
@@ -273,7 +284,7 @@ static int dwmci_setup_bus(struct dwmci_host *host, u32 freq)
 
 static void dwmci_set_ios(struct mmc *mmc)
 {
-	struct dwmci_host *host = (struct dwmci_host *)mmc->priv;
+	struct dwmci_host *host = mmc->priv;
 	u32 ctype;
 
 	debug("Buswidth = %d, clock: %d\n",mmc->bus_width, mmc->clock);
@@ -299,18 +310,10 @@ static void dwmci_set_ios(struct mmc *mmc)
 
 static int dwmci_init(struct mmc *mmc)
 {
-	struct dwmci_host *host = (struct dwmci_host *)mmc->priv;
-	u32 fifo_size;
+	struct dwmci_host *host = mmc->priv;
 
-	if (host->quirks & DWMCI_QUIRK_DISABLE_SMU) {
-		dwmci_writel(host, EMMCP_MPSBEGIN0, 0);
-		dwmci_writel(host, EMMCP_SEND0, 0);
-		dwmci_writel(host, EMMCP_CTRL0,
-			     MPSCTRL_SECURE_READ_BIT |
-			     MPSCTRL_SECURE_WRITE_BIT |
-			     MPSCTRL_NON_SECURE_READ_BIT |
-			     MPSCTRL_NON_SECURE_WRITE_BIT | MPSCTRL_VALID);
-	}
+	if (host->board_init)
+		host->board_init(host);
 
 	dwmci_writel(host, DWMCI_PWREN, 1);
 
@@ -320,7 +323,7 @@ static int dwmci_init(struct mmc *mmc)
 	}
 
 	/* Enumerate at 400KHz */
-	dwmci_setup_bus(host, mmc->f_min);
+	dwmci_setup_bus(host, mmc->cfg->f_min);
 
 	dwmci_writel(host, DWMCI_RINTSTS, 0xFFFFFFFF);
 	dwmci_writel(host, DWMCI_INTMASK, 0);
@@ -330,13 +333,9 @@ static int dwmci_init(struct mmc *mmc)
 	dwmci_writel(host, DWMCI_IDINTEN, 0);
 	dwmci_writel(host, DWMCI_BMOD, 1);
 
-	if (!host->fifoth_val) {
-		fifo_size = dwmci_readl(host, DWMCI_FIFOTH);
-		fifo_size = ((fifo_size & RX_WMARK_MASK) >> RX_WMARK_SHIFT) + 1;
-		host->fifoth_val = MSIZE(0x2) | RX_WMARK(fifo_size / 2 - 1) |
-			TX_WMARK(fifo_size / 2);
+	if (host->fifoth_val) {
+		dwmci_writel(host, DWMCI_FIFOTH, host->fifoth_val);
 	}
-	dwmci_writel(host, DWMCI_FIFOTH, host->fifoth_val);
 
 	dwmci_writel(host, DWMCI_CLKENA, 0);
 	dwmci_writel(host, DWMCI_CLKSRC, 0);
@@ -344,41 +343,37 @@ static int dwmci_init(struct mmc *mmc)
 	return 0;
 }
 
+static const struct mmc_ops dwmci_ops = {
+	.send_cmd	= dwmci_send_cmd,
+	.set_ios	= dwmci_set_ios,
+	.init		= dwmci_init,
+};
+
 int add_dwmci(struct dwmci_host *host, u32 max_clk, u32 min_clk)
 {
-	struct mmc *mmc;
-	int err = 0;
+	host->cfg.name = host->name;
+	host->cfg.ops = &dwmci_ops;
+	host->cfg.f_min = min_clk;
+	host->cfg.f_max = max_clk;
 
-	mmc = malloc(sizeof(struct mmc));
-	if (!mmc) {
-		printf("mmc malloc fail!\n");
-		return -1;
-	}
+	host->cfg.voltages = MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_165_195;
 
-	mmc->priv = host;
-	host->mmc = mmc;
-
-	sprintf(mmc->name, "%s", host->name);
-	mmc->send_cmd = dwmci_send_cmd;
-	mmc->set_ios = dwmci_set_ios;
-	mmc->init = dwmci_init;
-	mmc->f_min = min_clk;
-	mmc->f_max = max_clk;
-
-	mmc->voltages = MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_165_195;
-
-	mmc->host_caps = host->caps;
+	host->cfg.host_caps = host->caps;
 
 	if (host->buswidth == 8) {
-		mmc->host_caps |= MMC_MODE_8BIT;
-		mmc->host_caps &= ~MMC_MODE_4BIT;
+		host->cfg.host_caps |= MMC_MODE_8BIT;
+		host->cfg.host_caps &= ~MMC_MODE_4BIT;
 	} else {
-		mmc->host_caps |= MMC_MODE_4BIT;
-		mmc->host_caps &= ~MMC_MODE_8BIT;
+		host->cfg.host_caps |= MMC_MODE_4BIT;
+		host->cfg.host_caps &= ~MMC_MODE_8BIT;
 	}
-	mmc->host_caps |= MMC_MODE_HS | MMC_MODE_HS_52MHz | MMC_MODE_HC;
+	host->cfg.host_caps |= MMC_MODE_HS | MMC_MODE_HS_52MHz | MMC_MODE_HC;
 
-	err = mmc_register(mmc);
+	host->cfg.b_max = CONFIG_SYS_MMC_MAX_BLK_COUNT;
 
-	return err;
+	host->mmc = mmc_create(&host->cfg, host);
+	if (host->mmc == NULL)
+		return -1;
+
+	return 0;
 }

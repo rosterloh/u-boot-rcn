@@ -6,6 +6,13 @@
 #
 
 ifndef CONFIG_SPL_BUILD
+
+obj-$(CONFIG_RSA) += rsa/
+obj-$(CONFIG_LZMA) += lzma/
+obj-$(CONFIG_LZO) += lzo/
+obj-$(CONFIG_ZLIB) += zlib/
+obj-$(CONFIG_TIZEN) += tizen/
+
 obj-$(CONFIG_AES) += aes.o
 obj-$(CONFIG_BZIP2) += bzlib.o
 obj-$(CONFIG_BZIP2) += bzlib_crctable.o
@@ -14,6 +21,7 @@ obj-$(CONFIG_BZIP2) += bzlib_randtable.o
 obj-$(CONFIG_BZIP2) += bzlib_huffman.o
 obj-$(CONFIG_USB_TTY) += circbuf.o
 obj-y += crc7.o
+obj-y += crc8.o
 obj-y += crc16.o
 obj-$(CONFIG_OF_CONTROL) += fdtdec.o
 obj-$(CONFIG_TEST_FDTDEC) += fdtdec_test.o
@@ -52,11 +60,8 @@ obj-$(CONFIG_REGEX) += slre.o
 obj-y += string.o
 obj-y += time.o
 obj-$(CONFIG_TRACE) += trace.o
-obj-$(CONFIG_BOOTP_PXE) += uuid.o
+obj-$(CONFIG_LIB_UUID) += uuid.o
 obj-y += vsprintf.o
-obj-$(CONFIG_RANDOM_MACADDR) += rand.o
-obj-$(CONFIG_BOOTP_RANDOM_DELAY) += rand.o
-obj-$(CONFIG_CMD_LINK_LOCAL) += rand.o
+obj-$(CONFIG_LIB_RAND) += rand.o
 
-# SEE README.arm-unaligned-accesses
-$(obj)bzlib.o: CFLAGS += $(PLATFORM_NO_UNALIGNED)
+subdir-ccflags-$(CONFIG_CC_OPTIMIZE_LIBS_FOR_SPEED) += -O2

@@ -19,7 +19,6 @@
  * (easy to change)
  */
 
-#define CONFIG_MPC8260		1	/* This is an MPC8260 CPU	*/
 #define CONFIG_RSD_PROTO	1	/* on a R&S Protocol Board      */
 #define CONFIG_CPM2		1	/* Has a CPM2 */
 
@@ -121,7 +120,6 @@
 
 #if defined(CONFIG_CMD_KGDB)
 #define CONFIG_KGDB_BAUDRATE	230400		/* speed to run kgdb serial port */
-#define CONFIG_KGDB_SER_INDEX	2		/* which serial port to use */
 #endif
 
 /*

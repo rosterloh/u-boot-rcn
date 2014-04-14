@@ -19,6 +19,7 @@
 static bool dfu_reset_request;
 static LIST_HEAD(dfu_list);
 static int dfu_alt_num;
+static int alt_num_cnt;
 
 bool dfu_reset(void)
 {
@@ -74,6 +75,11 @@ unsigned char *dfu_free_buf(void)
 	return dfu_buf;
 }
 
+unsigned long dfu_get_buf_size(void)
+{
+	return dfu_buf_size;
+}
+
 unsigned char *dfu_get_buf(void)
 {
 	char *s;
@@ -117,6 +123,28 @@ static int dfu_write_buffer_drain(struct dfu_entity *dfu)
 	dfu->offset += w_size;
 
 	puts("#");
+
+	return ret;
+}
+
+int dfu_flush(struct dfu_entity *dfu, void *buf, int size, int blk_seq_num)
+{
+	int ret = 0;
+
+	if (dfu->flush_medium)
+		ret = dfu->flush_medium(dfu);
+
+	printf("\nDFU complete CRC32: 0x%08x\n", dfu->crc);
+
+	/* clear everything */
+	dfu_free_buf();
+	dfu->crc = 0;
+	dfu->offset = 0;
+	dfu->i_blk_seq_num = 0;
+	dfu->i_buf_start = dfu_buf;
+	dfu->i_buf_end = dfu_buf;
+	dfu->i_buf = dfu->i_buf_start;
+	dfu->inited = 0;
 
 	return ret;
 }
@@ -191,26 +219,6 @@ int dfu_write(struct dfu_entity *dfu, void *buf, int size, int blk_seq_num)
 			ret = tret;
 	}
 
-	/* end? */
-	if (size == 0) {
-		/* Now try and flush to the medium if needed. */
-		if (dfu->flush_medium)
-			ret = dfu->flush_medium(dfu);
-		printf("\nDFU complete CRC32: 0x%08x\n", dfu->crc);
-
-		/* clear everything */
-		dfu_free_buf();
-		dfu->crc = 0;
-		dfu->offset = 0;
-		dfu->i_blk_seq_num = 0;
-		dfu->i_buf_start = dfu_buf;
-		dfu->i_buf_end = dfu_buf;
-		dfu->i_buf = dfu->i_buf_start;
-
-		dfu->inited = 0;
-
-	}
-
 	return ret = 0 ? size : ret;
 }
 
@@ -229,6 +237,7 @@ static int dfu_read_buffer_fill(struct dfu_entity *dfu, void *buf, int size)
 			dfu->crc = crc32(dfu->crc, buf, chunk);
 			dfu->i_buf += chunk;
 			dfu->b_left -= chunk;
+			dfu->r_left -= chunk;
 			size -= chunk;
 			buf += chunk;
 			readn += chunk;
@@ -287,7 +296,7 @@ int dfu_read(struct dfu_entity *dfu, void *buf, int size, int blk_seq_num)
 		dfu->offset = 0;
 		dfu->i_buf_end = dfu_get_buf() + dfu_buf_size;
 		dfu->i_buf = dfu->i_buf_start;
-		dfu->b_left = 0;
+		dfu->b_left = min(dfu_buf_size, dfu->r_left);
 
 		dfu->bad_skip = 0;
 
@@ -371,6 +380,8 @@ void dfu_free_entities(void)
 	if (t)
 		free(t);
 	INIT_LIST_HEAD(&dfu_list);
+
+	alt_num_cnt = 0;
 }
 
 int dfu_config_entities(char *env, char *interface, int num)
@@ -388,11 +399,12 @@ int dfu_config_entities(char *env, char *interface, int num)
 	for (i = 0; i < dfu_alt_num; i++) {
 
 		s = strsep(&env, ";");
-		ret = dfu_fill_entity(&dfu[i], s, i, interface, num);
+		ret = dfu_fill_entity(&dfu[i], s, alt_num_cnt, interface, num);
 		if (ret)
 			return -1;
 
 		list_add_tail(&dfu[i].list, &dfu_list);
+		alt_num_cnt++;
 	}
 
 	return 0;

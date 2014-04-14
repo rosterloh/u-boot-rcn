@@ -17,8 +17,6 @@
 #include <mpc85xx.h>
 #include <version.h>
 
-#define _LINUX_CONFIG_H 1	/* avoid reading Linux autoconf.h file	*/
-
 #include <ppc_asm.tmpl>
 #include <ppc_defs.h>
 
@@ -886,7 +884,11 @@ delete_ccsr_l2_tlb:
 	erratum_set_dcsr 0xb0008 0x00900000
 	erratum_set_dcsr 0xb0e40 0xe00a0000
 	erratum_set_ccsr 0x18600 CONFIG_SYS_FSL_CORENET_SNOOPVEC_COREONLY
+#ifdef  CONFIG_RAMBOOT_PBL
+	erratum_set_ccsr 0x10f00 0x495e5000
+#else
 	erratum_set_ccsr 0x10f00 0x415e5000
+#endif
 	erratum_set_ccsr 0x11f00 0x415e5000
 
 	/* Make temp mapping uncacheable again, if it was initially */

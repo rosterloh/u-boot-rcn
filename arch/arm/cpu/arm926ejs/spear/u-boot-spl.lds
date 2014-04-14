@@ -49,13 +49,20 @@ SECTIONS
 		__bss_end = .;
 	}
 
-	_end = .;
+	.end :
+	{
+		*(.__end)
+	}
 
-	/DISCARD/ : { *(.dynstr*) }
-	/DISCARD/ : { *(.dynsym*) }
-	/DISCARD/ : { *(.dynamic*) }
-	/DISCARD/ : { *(.hash*) }
-	/DISCARD/ : { *(.plt*) }
-	/DISCARD/ : { *(.interp*) }
-	/DISCARD/ : { *(.gnu*) }
+	_image_binary_end = .;
+
+	.dynsym _image_binary_end : { *(.dynsym) }
+	.dynbss : { *(.dynbss) }
+	.dynstr : { *(.dynstr*) }
+	.dynamic : { *(.dynamic*) }
+	.hash : { *(.hash*) }
+	.plt : { *(.plt*) }
+	.interp : { *(.interp*) }
+	.gnu : { *(.gnu*) }
+	.ARM.exidx : { *(.ARM.exidx*) }
 }

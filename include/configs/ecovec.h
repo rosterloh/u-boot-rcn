@@ -23,9 +23,6 @@
  */
 
 #undef DEBUG
-#define CONFIG_SH		1
-#define CONFIG_SH4		1
-#define CONFIG_SH4A		1
 #define CONFIG_CPU_SH7724	1
 #define CONFIG_BOARD_LATE_INIT		1
 #define CONFIG_ECOVEC		1
@@ -58,18 +55,17 @@
 
 /* I2C */
 #define CONFIG_CMD_I2C
-#define CONFIG_SH_I2C 1
-#define CONFIG_HARD_I2C		1
-#define CONFIG_I2C_MULTI_BUS	1
-#define CONFIG_SYS_MAX_I2C_BUS	2
-#define CONFIG_SYS_I2C_MODULE	1
-#define CONFIG_SYS_I2C_SPEED	100000 /* 100 kHz */
+#define CONFIG_SYS_I2C
+#define CONFIG_SYS_I2C_SH
 #define CONFIG_SYS_I2C_SLAVE	0x7F
+#define CONFIG_SYS_I2C_SH_NUM_CONTROLLERS 2
+#define CONFIG_SYS_I2C_SH_BASE0	0xA4470000
+#define CONFIG_SYS_I2C_SH_SPEED0	100000
+#define CONFIG_SYS_I2C_SH_BASE1	0xA4750000
+#define CONFIG_SYS_I2C_SH_SPEED1	100000
 #define CONFIG_SH_I2C_DATA_HIGH	4
 #define CONFIG_SH_I2C_DATA_LOW 	5
 #define CONFIG_SH_I2C_CLOCK  	41666666
-#define CONFIG_SH_I2C_BASE0		0xA4470000
-#define CONFIG_SH_I2C_BASE1		0xA4750000
 
 /* Ether */
 #define CONFIG_SH_ETHER 1
@@ -162,8 +158,6 @@
 #define CONFIG_SYS_MONITOR_LEN	(256 * 1024)
 /* Size of DRAM reserved for malloc() use */
 #define CONFIG_SYS_MALLOC_LEN	(256 * 1024)
-/* size in bytes reserved for initial data */
-#define CONFIG_SYS_GBL_DATA_SIZE	(256)
 #define CONFIG_SYS_BOOTMAPSZ	(8 * 1024 * 1024)
 
 /* ENV setting */

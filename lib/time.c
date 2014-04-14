@@ -37,7 +37,7 @@ unsigned long notrace timer_read_counter(void)
 #endif
 }
 #else
-extern unsigned long timer_read_counter(void);
+extern unsigned long __weak timer_read_counter(void);
 #endif
 
 unsigned long long __weak notrace get_ticks(void)
@@ -51,13 +51,18 @@ unsigned long long __weak notrace get_ticks(void)
 	return ((unsigned long long)gd->timebase_h << 32) | gd->timebase_l;
 }
 
-static unsigned long long notrace tick_to_time(unsigned long long tick)
+static unsigned long long notrace tick_to_time(uint64_t tick)
 {
 	unsigned int div = get_tbclk();
 
 	tick *= CONFIG_SYS_HZ;
 	do_div(tick, div);
 	return tick;
+}
+
+int __weak timer_init(void)
+{
+	return 0;
 }
 
 ulong __weak get_timer(ulong base)
@@ -71,8 +76,8 @@ unsigned long __weak notrace timer_get_us(void)
 }
 static unsigned long long usec_to_tick(unsigned long usec)
 {
-	unsigned long long tick = usec * get_tbclk();
-	usec *= get_tbclk();
+	uint64_t tick = usec;
+	tick *= get_tbclk();
 	do_div(tick, 1000000);
 	return tick;
 }

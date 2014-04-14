@@ -24,7 +24,7 @@
 #define CONFIG_SYS_TEXT_BASE_SPL 0xfff00000
 #define CONFIG_SYS_MONITOR_BASE	CONFIG_SYS_TEXT_BASE_SPL /* start of monitor */
 #else
-#define CONFIG_SYS_LDSCRIPT $(TOPDIR)/$(CPUDIR)/u-boot-nand.lds
+#define CONFIG_SYS_LDSCRIPT $(CPUDIR)/u-boot-nand.lds
 #define CONFIG_SYS_TEXT_BASE	0xf8f82000
 #endif /* CONFIG_NAND_SPL */
 #endif
@@ -44,7 +44,6 @@
 /* High Level Configuration Options */
 #define CONFIG_BOOKE		1	/* BOOKE */
 #define CONFIG_E500		1	/* BOOKE e500 family */
-#define CONFIG_MPC85xx		1	/* MPC8540/60/55/41/48 */
 #define CONFIG_MPC8572		1
 #define CONFIG_MPC8572DS	1
 #define CONFIG_MP		1	/* support multiple processors */
@@ -106,7 +105,7 @@
 
 /* DDR Setup */
 #define CONFIG_VERY_BIG_RAM
-#define CONFIG_FSL_DDR2
+#define CONFIG_SYS_FSL_DDR2
 #undef CONFIG_FSL_DDR_INTERACTIVE
 #define CONFIG_SPD_EEPROM		/* Use SPD EEPROM for DDR setup */
 #define CONFIG_DDR_SPD
@@ -322,6 +321,8 @@
 #define CONFIG_CMD_NAND		1
 #define CONFIG_NAND_FSL_ELBC	1
 #define CONFIG_SYS_NAND_BLOCK_SIZE    (128 * 1024)
+#define CONFIG_SYS_NAND_MAX_OOBFREE	5
+#define CONFIG_SYS_NAND_MAX_ECCPOS	56
 
 /* NAND boot: 4K NAND loader config */
 #define CONFIG_SYS_NAND_SPL_SIZE	0x1000
@@ -680,7 +681,6 @@
 
 #if defined(CONFIG_CMD_KGDB)
 #define CONFIG_KGDB_BAUDRATE	230400	/* speed to run kgdb serial port */
-#define CONFIG_KGDB_SER_INDEX	2	/* which serial port to use */
 #endif
 
 /*

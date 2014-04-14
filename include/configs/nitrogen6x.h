@@ -10,6 +10,7 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
+#include "mx6_common.h"
 #define CONFIG_MX6
 #define CONFIG_DISPLAY_CPUINFO
 #define CONFIG_DISPLAY_BOARDINFO
@@ -30,7 +31,7 @@
 #define CONFIG_BOARD_EARLY_INIT_F
 #define CONFIG_MISC_INIT_R
 #define CONFIG_MXC_GPIO
-#define CONFIG_MV_UDC
+#define CONFIG_CI_UDC
 #define CONFIG_USBD_HS
 #define CONFIG_USB_GADGET_DUALSPEED
 #define CONFIG_USB_ETHER
@@ -61,16 +62,6 @@
 #define CONFIG_SYS_I2C
 #define CONFIG_SYS_I2C_MXC
 #define CONFIG_SYS_I2C_SPEED		100000
-
-/* OCOTP Configs */
-#define CONFIG_CMD_IMXOTP
-#ifdef CONFIG_CMD_IMXOTP
-#define CONFIG_IMX_OTP
-#define IMX_OTP_BASE			OCOTP_BASE_ADDR
-#define IMX_OTP_ADDR_MAX		0x7F
-#define IMX_OTP_DATA_ERROR_VAL		0xBADABADA
-#define IMX_OTPWRITE_ENABLED
-#endif
 
 /* MMC Configs */
 #define CONFIG_FSL_ESDHC
@@ -124,6 +115,7 @@
 #define CONFIG_USB_STORAGE
 #define CONFIG_USB_HOST_ETHER
 #define CONFIG_USB_ETHER_ASIX
+#define CONFIG_USB_ETHER_MCS7830
 #define CONFIG_USB_ETHER_SMSC95XX
 #define CONFIG_USB_MAX_CONTROLLER_COUNT 2
 #define CONFIG_EHCI_HCD_INIT_AFTER_RESET	/* For OTG port */
@@ -189,7 +181,7 @@
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
 	"fdt_file=imx6q-sabrelite.dtb\0" \
-	"fdt_addr=0x11000000\0" \
+	"fdt_addr=0x18000000\0" \
 	"boot_fdt=try\0" \
 	"ip_dyn=yes\0" \
 	"mmcdev=0\0" \
@@ -360,5 +352,15 @@
 #define CONFIG_CMD_BOOTZ
 #define CONFIG_SUPPORT_RAW_INITRD
 #define CONFIG_CMD_FS_GENERIC
+
+/*
+ * PCI express
+ */
+#ifdef CONFIG_CMD_PCI
+#define CONFIG_PCI
+#define CONFIG_PCI_PNP
+#define CONFIG_PCI_SCAN_SHOW
+#define CONFIG_PCIE_IMX
+#endif
 
 #endif	       /* __CONFIG_H */

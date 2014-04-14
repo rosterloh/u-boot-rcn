@@ -1,14 +1,9 @@
-
 #
 # (C) Copyright 2003-2006
 # Wolfgang Denk, DENX Software Engineering, wd@denx.de.
 #
 # SPDX-License-Identifier:	GPL-2.0+
 #
-
-# ifneq ($(OBJTREE),$(SRCTREE))
-# $(shell mkdir -p $(obj)../common/xilinx_jtag)
-# endif
 
 # Objects for Xilinx JTAG programming (CPLD)
 # CPLD  = ../common/xilinx_jtag/lenval.o \

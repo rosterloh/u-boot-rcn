@@ -41,7 +41,6 @@
 /* High Level Configuration Options */
 #define CONFIG_BOOKE			/* BOOKE */
 #define CONFIG_E500			/* BOOKE e500 family */
-#define CONFIG_MPC85xx			/* MPC8540/60/55/41/48 */
 #define CONFIG_P1022
 #define CONFIG_CONTROLCENTERD
 #define CONFIG_MP			/* support multiple processors */
@@ -138,7 +137,7 @@
 #define CONFIG_SYS_SDRAM_SIZE 1024
 #define CONFIG_VERY_BIG_RAM
 
-#define CONFIG_FSL_DDR3
+#define CONFIG_SYS_FSL_DDR3
 #define CONFIG_NUM_DDR_CONTROLLERS	1
 #define CONFIG_DIMM_SLOTS_PER_CTLR	1
 #define CONFIG_CHIP_SELECTS_PER_CTRL	(2 * CONFIG_DIMM_SLOTS_PER_CTLR)

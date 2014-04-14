@@ -15,11 +15,13 @@
 #include "mux_data.h"
 
 #if defined(CONFIG_USB_EHCI) || defined(CONFIG_USB_XHCI_OMAP)
+#include <sata.h>
 #include <usb.h>
 #include <asm/gpio.h>
 #include <asm/arch/clock.h>
 #include <asm/arch/ehci.h>
 #include <asm/ehci-omap.h>
+#include <asm/arch/sata.h>
 
 #define DIE_ID_REG_BASE     (OMAP54XX_L4_CORE_BASE + 0x2000)
 #define DIE_ID_REG_OFFSET	0x200
@@ -64,6 +66,12 @@ int board_init(void)
 
 	tca642x_set_inital_state(CONFIG_SYS_I2C_TCA642X_ADDR, tca642x_init);
 
+	return 0;
+}
+
+int board_late_init(void)
+{
+	init_sata(0);
 	return 0;
 }
 
@@ -147,19 +155,6 @@ void set_muxconf_regs_essential(void)
 	do_set_mux((*ctrl)->control_padconf_wkup_base,
 		   wkup_padconf_array_essential,
 		   sizeof(wkup_padconf_array_essential) /
-		   sizeof(struct pad_conf_entry));
-}
-
-void set_muxconf_regs_non_essential(void)
-{
-	do_set_mux((*ctrl)->control_padconf_core_base,
-		   core_padconf_array_non_essential,
-		   sizeof(core_padconf_array_non_essential) /
-		   sizeof(struct pad_conf_entry));
-
-	do_set_mux((*ctrl)->control_padconf_wkup_base,
-		   wkup_padconf_array_non_essential,
-		   sizeof(wkup_padconf_array_non_essential) /
 		   sizeof(struct pad_conf_entry));
 }
 

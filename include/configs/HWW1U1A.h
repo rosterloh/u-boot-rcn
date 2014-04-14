@@ -13,7 +13,6 @@
 /* High-level system configuration options */
 #define CONFIG_BOOKE		/* Power/PowerPC Book-E			*/
 #define CONFIG_E500		/* e500 (Power ISA v2.03 with SPE)	*/
-#define CONFIG_MPC85xx		/* MPC8540/60/55/41/48 family		*/
 #define CONFIG_FSL_ELBC		/* FreeScale Enhanced LocalBus Cntlr	*/
 #define CONFIG_FSL_LAW		/* FreeScale Local Access Window	*/
 #define CONFIG_P2020		/* FreeScale P2020			*/
@@ -255,7 +254,7 @@
 /* -------------------------------------------------------------------- */
 
 /* FreeScale DDR2/3 SDRAM Controller */
-#define CONFIG_FSL_DDR2		/* Our SDRAM slot is DDR2		*/
+#define CONFIG_SYS_FSL_DDR2		/* Our SDRAM slot is DDR2		*/
 #define CONFIG_DDR_ECC		/* Enable ECC by default		*/
 #define CONFIG_DDR_SPD		/* Detect DDR config from SPD EEPROM	*/
 #define CONFIG_SPD_EEPROM	/* ...why 2 config variables for this?	*/

@@ -226,6 +226,7 @@ struct prcm_regs {
 	u32 cm_l3init_hsusbotg_clkctrl;
 	u32 cm_l3init_hsusbtll_clkctrl;
 	u32 cm_l3init_p1500_clkctrl;
+	u32 cm_l3init_sata_clkctrl;
 	u32 cm_l3init_fsusb_clkctrl;
 	u32 cm_l3init_ocp2scp1_clkctrl;
 	u32 cm_l3init_ocp2scp3_clkctrl;
@@ -366,6 +367,7 @@ struct omap_sys_ctrl_regs {
 	u32 control_ldosram_mpu_voltage_ctrl;
 	u32 control_ldosram_core_voltage_ctrl;
 	u32 control_usbotghs_ctrl;
+	u32 control_phy_power_sata;
 	u32 control_padconf_core_base;
 	u32 control_paconf_global;
 	u32 control_paconf_mode;
@@ -565,7 +567,6 @@ u32 omap_ddr_clk(void);
 u32 get_sys_clk_index(void);
 void enable_basic_clocks(void);
 void enable_basic_uboot_clocks(void);
-void enable_non_essential_clocks(void);
 void scale_vcores(struct vcores_data const *);
 u32 get_offset_code(u32 volt_offset, struct pmic_data *pmic);
 void do_scale_vcore(u32 vcore_reg, u32 volt_mv, struct pmic_data *pmic);
@@ -605,6 +606,14 @@ static inline u8 is_omap54xx(void)
 	extern u32 *const omap_si_rev;
 	return ((*omap_si_rev & 0xFF000000) == OMAP54xx);
 }
+
+#define DRA7XX		0x07000000
+
+static inline u8 is_dra7xx(void)
+{
+	extern u32 *const omap_si_rev;
+	return ((*omap_si_rev & 0xFF000000) == DRA7XX);
+}
 #endif
 
 /*
@@ -633,6 +642,7 @@ static inline u8 is_omap54xx(void)
 
 /* DRA7XX */
 #define DRA752_ES1_0	0x07520100
+#define DRA752_ES1_1	0x07520110
 
 /*
  * SRAM scratch space entries

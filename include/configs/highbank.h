@@ -8,7 +8,6 @@
 #define __CONFIG_H
 
 #define CONFIG_SYS_DCACHE_OFF
-#define CONFIG_L2_OFF
 #define CONFIG_SYS_THUMB_BUILD
 
 #define CONFIG_SYS_NO_FLASH
@@ -82,7 +81,7 @@
 #define CONFIG_RESET_TO_RETRY
 #define CONFIG_AUTOBOOT_KEYED
 #define CONFIG_AUTOBOOT_PROMPT "Autobooting in %d seconds...\nPress <s> to stop or <d> to delay\n", bootdelay
-
+#define CONFIG_AUTOBOOT_KEYED_CTRLC
 /*
  * Miscellaneous configurable options
  */

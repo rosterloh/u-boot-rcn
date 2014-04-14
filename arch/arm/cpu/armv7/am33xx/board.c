@@ -32,14 +32,19 @@
 #include <linux/usb/gadget.h>
 #include <linux/usb/musb.h>
 #include <asm/omap_musb.h>
+#include <asm/davinci_rtc.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
-static const struct gpio_bank gpio_bank_am33xx[4] = {
+static const struct gpio_bank gpio_bank_am33xx[] = {
 	{ (void *)AM33XX_GPIO0_BASE, METHOD_GPIO_24XX },
 	{ (void *)AM33XX_GPIO1_BASE, METHOD_GPIO_24XX },
 	{ (void *)AM33XX_GPIO2_BASE, METHOD_GPIO_24XX },
 	{ (void *)AM33XX_GPIO3_BASE, METHOD_GPIO_24XX },
+#ifdef CONFIG_AM43XX
+	{ (void *)AM33XX_GPIO4_BASE, METHOD_GPIO_24XX },
+	{ (void *)AM33XX_GPIO5_BASE, METHOD_GPIO_24XX },
+#endif
 };
 
 const struct gpio_bank *const omap_gpio_bank = gpio_bank_am33xx;
@@ -148,21 +153,23 @@ __weak void am33xx_spl_board_init(void)
 	do_setup_dpll(&dpll_mpu_regs, &dpll_mpu_opp100);
 }
 
+#if defined(CONFIG_SPL_AM33XX_ENABLE_RTC32K_OSC)
 static void rtc32k_enable(void)
 {
-	struct rtc_regs *rtc = (struct rtc_regs *)RTC_BASE;
+	struct davinci_rtc *rtc = (struct davinci_rtc *)RTC_BASE;
 
 	/*
 	 * Unlock the RTC's registers.  For more details please see the
 	 * RTC_SS section of the TRM.  In order to unlock we need to
 	 * write these specific values (keys) in this order.
 	 */
-	writel(0x83e70b13, &rtc->kick0r);
-	writel(0x95a4f1e0, &rtc->kick1r);
+	writel(RTC_KICK0R_WE, &rtc->kick0r);
+	writel(RTC_KICK1R_WE, &rtc->kick1r);
 
 	/* Enable the RTC 32K OSC by setting bits 3 and 6. */
 	writel((1 << 3) | (1 << 6), &rtc->osc);
 }
+#endif
 
 static void uart_soft_reset(void)
 {
@@ -195,6 +202,7 @@ static void watchdog_disable(void)
 }
 #endif
 
+#if defined(CONFIG_SPL_BUILD) || defined(CONFIG_NOR_BOOT)
 void s_init(void)
 {
 	/*
@@ -213,26 +221,33 @@ void s_init(void)
 #ifdef CONFIG_SPL_BUILD
 	save_omap_boot_params();
 #endif
-#if defined(CONFIG_SPL_BUILD) || defined(CONFIG_NOR_BOOT)
 	watchdog_disable();
 	timer_init();
 	set_uart_mux_conf();
 	setup_clocks_for_console();
 	uart_soft_reset();
-#endif
 #ifdef CONFIG_NOR_BOOT
 	gd->baudrate = CONFIG_BAUDRATE;
 	serial_init();
 	gd->have_console = 1;
-#else
+#elif defined(CONFIG_SPL_BUILD)
 	gd = &gdata;
 	preloader_console_init();
 #endif
-#if defined(CONFIG_SPL_BUILD) || defined(CONFIG_NOR_BOOT)
 	prcm_init();
 	set_mux_conf_regs();
+#if defined(CONFIG_SPL_AM33XX_ENABLE_RTC32K_OSC)
 	/* Enable RTC32K clock */
 	rtc32k_enable();
-	sdram_init();
 #endif
+	sdram_init();
 }
+#endif
+
+#ifndef CONFIG_SYS_DCACHE_OFF
+void enable_caches(void)
+{
+	/* Enable D-cache. I-cache is already enabled in start.S */
+	dcache_enable();
+}
+#endif /* !CONFIG_SYS_DCACHE_OFF */

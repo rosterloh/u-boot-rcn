@@ -4,7 +4,7 @@
  * Lokesh Vutla	  <lokeshvutla@ti.com>
  *
  * Configuration settings for the TI DRA7XX board.
- * See omap5_common.h for omap5 common settings.
+ * See ti_omap5_common.h for omap5 common settings.
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */
@@ -22,14 +22,30 @@
 #define CONFIG_SYS_REDUNDAND_ENVIRONMENT
 #define CONFIG_CMD_SAVEENV
 
+#if (CONFIG_CONS_INDEX == 1)
 #define CONSOLEDEV			"ttyO0"
-#define CONFIG_CONS_INDEX		1
-#define CONFIG_SYS_NS16550_COM1		UART1_BASE
+#elif (CONFIG_CONS_INDEX == 3)
+#define CONSOLEDEV			"ttyO2"
+#endif
+#define CONFIG_SYS_NS16550_COM1		UART1_BASE	/* Base EVM has UART0 */
+#define CONFIG_SYS_NS16550_COM2		UART2_BASE	/* UART2 */
+#define CONFIG_SYS_NS16550_COM3		UART3_BASE	/* UART3 */
 #define CONFIG_BAUDRATE			115200
 
 #define CONFIG_SYS_OMAP_ABE_SYSCK
 
-#include <configs/omap5_common.h>
+/* Define the default GPT table for eMMC */
+#define PARTS_DEFAULT \
+	"uuid_disk=${uuid_gpt_disk};" \
+	"name=rootfs,start=2MiB,size=-,uuid=${uuid_gpt_rootfs}"
+
+#include <configs/ti_omap5_common.h>
+
+/* Enhance our eMMC support / experience. */
+#define CONFIG_CMD_GPT
+#define CONFIG_EFI_PARTITION
+#define CONFIG_PARTITION_UUIDS
+#define CONFIG_CMD_PART
 
 /* CPSW Ethernet */
 #define CONFIG_CMD_NET			/* 'bootp' and 'tftp' */
@@ -46,7 +62,6 @@
 #define CONFIG_MII			/* Required in net/eth.c */
 #define CONFIG_PHY_GIGE			/* per-board part of CPSW */
 #define CONFIG_PHYLIB
-#define CONFIG_PHY_ADDR			2
 
 /* SPI */
 #undef	CONFIG_OMAP3_SPI
@@ -55,6 +70,7 @@
 #define CONFIG_SPI_FLASH_SPANSION
 #define CONFIG_CMD_SF
 #define CONFIG_CMD_SPI
+#define CONFIG_SPI_FLASH_BAR
 #define CONFIG_TI_SPI_MMAP
 #define CONFIG_SF_DEFAULT_SPEED                48000000
 #define CONFIG_DEFAULT_SPI_MODE                SPI_MODE_3
@@ -67,6 +83,8 @@
 #define CONFIG_SPL_SPI_CS              0
 #define CONFIG_SYS_SPI_U_BOOT_OFFS     0x20000
 
+#define CONFIG_SUPPORT_EMMC_BOOT
+
 /* USB xHCI HOST */
 #define CONFIG_CMD_USB
 #define CONFIG_USB_HOST
@@ -77,5 +95,16 @@
 
 #define CONFIG_OMAP_USB_PHY
 #define CONFIG_OMAP_USB2PHY2_HOST
+
+/* SATA */
+#define CONFIG_BOARD_LATE_INIT
+#define CONFIG_CMD_SCSI
+#define CONFIG_LIBATA
+#define CONFIG_SCSI_AHCI
+#define CONFIG_SCSI_AHCI_PLAT
+#define CONFIG_SYS_SCSI_MAX_SCSI_ID	1
+#define CONFIG_SYS_SCSI_MAX_LUN		1
+#define CONFIG_SYS_SCSI_MAX_DEVICE	(CONFIG_SYS_SCSI_MAX_SCSI_ID * \
+						CONFIG_SYS_SCSI_MAX_LUN)
 
 #endif /* __CONFIG_DRA7XX_EVM_H */

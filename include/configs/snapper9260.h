@@ -13,7 +13,7 @@
 
 /* SoC type is defined in boards.cfg */
 #include <asm/hardware.h>
-#include <asm/sizes.h>
+#include <linux/sizes.h>
 
 #define CONFIG_SYS_TEXT_BASE		0x20000000
 
@@ -59,11 +59,13 @@
 #define CONFIG_RMII
 #define CONFIG_NET_RETRY_COUNT		20
 #define CONFIG_RESET_PHY_R
+#define CONFIG_AT91_WANTS_COMMON_PHY
 #define CONFIG_TFTP_PORT
 #define CONFIG_TFTP_TSIZE
 
 /* USB */
 #define CONFIG_USB_ATMEL
+#define CONFIG_USB_ATMEL_CLK_SEL_PLLB
 #define CONFIG_USB_OHCI_NEW
 #define CONFIG_DOS_PARTITION
 #define CONFIG_SYS_USB_OHCI_CPU_INIT
@@ -73,7 +75,6 @@
 #define CONFIG_USB_STORAGE
 
 /* GPIOs and IO expander */
-#define CONFIG_AT91_LEGACY
 #define CONFIG_ATMEL_LEGACY
 #define CONFIG_AT91_GPIO
 #define CONFIG_AT91_GPIO_PULLUP		1

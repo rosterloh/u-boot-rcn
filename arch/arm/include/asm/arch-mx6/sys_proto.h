@@ -9,13 +9,7 @@
 #define _SYS_PROTO_H_
 
 #include <asm/imx-common/regs-common.h>
-
-#define MXC_CPU_MX51		0x51
-#define MXC_CPU_MX53		0x53
-#define MXC_CPU_MX6SL		0x60
-#define MXC_CPU_MX6DL		0x61
-#define MXC_CPU_MX6SOLO		0x62
-#define MXC_CPU_MX6Q		0x63
+#include "../arch-imx/cpu.h"
 
 #define is_soc_rev(rev)	((get_cpu_rev() & 0xFF) - rev)
 u32 get_cpu_rev(void);
@@ -28,8 +22,6 @@ u32 get_cpu_rev(void);
 
 const char *get_imx_type(u32 imxtype);
 unsigned imx_ddr_size(void);
-
-void set_vddsoc(u32 mv);
 
 /*
  * Initializes on-chip ethernet controllers.
